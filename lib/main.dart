@@ -20,21 +20,22 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  final String appName = "Business Manager";
+  final String subtitle = "Your Business Solution Partner";
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3), // Increased duration for smoother transition
+      duration: const Duration(seconds: 2),
     );
 
     _animation = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeInOut, // Smoother curve for natural movement
+      curve: Curves.easeInOut,
     );
 
-    // Start animation and keep at final state
     _controller.forward();
   }
 
@@ -46,6 +47,9 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: SafeArea(
         child: AnimatedBuilder(
@@ -58,18 +62,18 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
                   end: Alignment.bottomCenter,
                   colors: [
                     Color.lerp(
-                      Color(0xFFFFD700), // Gold
-                      Color(0xFFFF4500), // OrangeRed
+                      Color(0xFFFFD700),
+                      Color(0xFFFF4500),
                       _animation.value,
                     )!,
                     Color.lerp(
-                      Color(0xFFFFA500), // Orange
-                      Color(0xFF8B0000), // DarkRed
+                      Color(0xFFFFA500),
+                      Color(0xFF8B0000),
                       _animation.value,
                     )!,
                     Color.lerp(
-                      Color(0xFF4B0082), // Indigo
-                      Color(0xFF000000), // Black
+                      Color(0xFF4B0082),
+                      Color(0xFF000000),
                       _animation.value,
                     )!,
                   ],
@@ -78,21 +82,101 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
               ),
               child: Stack(
                 children: [
-                  Positioned(
-                    top: MediaQuery.of(context).size.height * 0.3 * _animation.value,
-                    left: MediaQuery.of(context).size.width * 0.4,
-                    child: SunWidget(animationValue: _animation.value),
-                  ),
-                  Center(
+                  // Business - Coming from left
+                  AnimatedPositioned(
+                    duration: Duration(milliseconds: 1500),
+                    left: screenWidth * 0.4 * (1 - _animation.value) - 200,
+                    top: screenHeight * 0.4,
                     child: Opacity(
                       opacity: _animation.value,
-                      child: const Text(
-                        'Welcome',
+                      child: Text(
+                        "Business",
                         style: TextStyle(
-                          fontSize: 40,
+                          fontSize: 34,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 10,
+                              color: Colors.black.withOpacity(0.5),
+                            )
+                          ],
                         ),
+                      ),
+                    ),
+                  ),
+
+                  // Manager - Coming from right
+                  AnimatedPositioned(
+                    duration: Duration(milliseconds: 1500),
+                    right: screenWidth * 0.4 * (1 - _animation.value) - 200,
+                    top: screenHeight * 0.4,
+                    child: Opacity(
+                      opacity: _animation.value,
+                      child: Text(
+                        "Manager",
+                        style: TextStyle(
+                          fontSize: 34,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 10,
+                              color: Colors.black.withOpacity(0.5),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Welcome - Coming from bottom
+                  AnimatedPositioned(
+                    duration: Duration(milliseconds: 1500),
+                    bottom: screenHeight * 0.2 * (1 - _animation.value),
+                    left: 0,
+                    right: 0,
+                    child: Opacity(
+                      opacity: _animation.value,
+                      child: Text(
+                        "Welcome",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 28,
+                          color: Colors.white70,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Merged App Name
+                  Positioned(
+                    top: screenHeight * 0.4,
+                    left: 0,
+                    right: 0,
+                    child: Opacity(
+                      opacity: _animation.value,
+                      child: Column(
+                        children: [
+                          Text(
+                            appName,
+                            style: TextStyle(
+                              fontSize: 34,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            subtitle,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -100,40 +184,6 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-}
-
-class SunWidget extends StatelessWidget {
-  final double animationValue;
-
-  const SunWidget({required this.animationValue});
-
-  @override
-  Widget build(BuildContext context) {
-    return Transform.scale(
-      scale: 1.0 - (animationValue * 0.3),
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              Color.lerp(Colors.orange, Colors.red, animationValue)!,
-              Color.lerp(Colors.yellow, Colors.deepOrange, animationValue)!,
-            ],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Color.lerp(Colors.orange.withOpacity(0.5),
-                  Colors.deepOrange.withOpacity(0.5), animationValue)!,
-              spreadRadius: 20,
-              blurRadius: 50,
-            ),
-          ],
         ),
       ),
     );
