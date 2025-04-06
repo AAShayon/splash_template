@@ -7,60 +7,72 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SunsetSplashScreen(),
+      home: CombinedSplashScreen(),
     );
   }
 }
 
-class SunsetSplashScreen extends StatefulWidget {
+class CombinedSplashScreen extends StatefulWidget {
   @override
-  _SunsetSplashScreenState createState() => _SunsetSplashScreenState();
+  _CombinedSplashScreenState createState() => _CombinedSplashScreenState();
 }
 
-class _SunsetSplashScreenState extends State<SunsetSplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _gradientAnimation;
+class _CombinedSplashScreenState extends State<CombinedSplashScreen>
+    with TickerProviderStateMixin {  // Changed to TickerProviderStateMixin
+  late AnimationController _sunsetController;
+  late Animation<double> _sunsetAnimation;
+
+  late AnimationController _textController;
   late Animation<double> _textAnimation;
   late Animation<double> _welcomeAnimation;
-  final String appName = "Business Manager";
+
   final String subtitle = "Your Business Solution Partner";
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+
+    // Sunset animation controller (3 seconds)
+    _sunsetController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 3),
     );
 
-    // Gradient animation (first 2 seconds)
-    _gradientAnimation = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Interval(0, 0.5, curve: Curves.easeInOut),
-        ));
+    _sunsetAnimation = CurvedAnimation(
+      parent: _sunsetController,
+      curve: Curves.easeInOut,
+    );
 
-        // Text animation (starts after gradient completes)
-        _textAnimation = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Interval(0.5, 0.85, curve: Curves.easeOut),
-        ));
+    // Text animation controller (starts after sunset completes)
+    _textController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
 
-        // Welcome animation (last to appear)
-        _welcomeAnimation = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Interval(0.7, 1.0, curve: Curves.easeOut),
-        ));
+    _textAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _textController,
+        curve: Interval(0.0, 0.75, curve: Curves.easeOut),
+      ),
+    );
 
-        _controller.forward();
+    _welcomeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _textController,
+        curve: Interval(0.5, 1.0, curve: Curves.easeOut),
+      ),
+    );
+
+    // Start animations in sequence
+    _sunsetController.forward().then((_) {
+      _textController.forward();
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _sunsetController.dispose();
+    _textController.dispose();
     super.dispose();
   }
 
@@ -71,7 +83,7 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
 
     return Scaffold(
       body: AnimatedBuilder(
-        animation: _controller,
+        animation: Listenable.merge([_sunsetController, _textController]),
         builder: (context, child) {
           return Container(
             decoration: BoxDecoration(
@@ -82,17 +94,17 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
                   Color.lerp(
                     Color(0xFFFFD700),
                     Color(0xFFFF4500),
-                    _gradientAnimation.value,
+                    _sunsetAnimation.value,
                   )!,
                   Color.lerp(
                     Color(0xFFFFA500),
                     Color(0xFF8B0000),
-                    _gradientAnimation.value,
+                    _sunsetAnimation.value,
                   )!,
                   Color.lerp(
                     Color(0xFF4B0082),
                     Color(0xFF000000),
-                    _gradientAnimation.value,
+                    _sunsetAnimation.value,
                   )!,
                 ],
                 stops: [0.0, 0.5, 1.0],
@@ -100,10 +112,16 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
             ),
             child: Stack(
               children: [
-                // Business Manager text - comes together in one row
-                Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: screenHeight * 0.3),
+                // Sun animation (part of sunset)
+                Positioned(
+                  top: screenHeight * 0.3 * _sunsetAnimation.value,
+                  left: screenWidth * 0.4,
+                  child: SunWidget(animationValue: _sunsetAnimation.value),
+                ),
+
+                // Business Manager text - appears after sunset completes
+                if (_sunsetController.isCompleted) ...[
+                  Center(
                     child: Opacity(
                       opacity: _textAnimation.value,
                       child: Row(
@@ -154,52 +172,86 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
                       ),
                     ),
                   ),
-                ),
 
-                // Subtitle - fades in at center
-                Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: screenHeight * 0.4),
-                    child: Opacity(
-                      opacity: _textAnimation.value,
-                      child: Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Welcome text - comes from bottom
-                Transform.translate(
-                  offset: Offset(
-                    0,
-                    screenHeight * 0.2 * (1 - _welcomeAnimation.value),
-                  ),
-                  child: Center(
+                  // Subtitle
+                  Center(
                     child: Padding(
-                      padding: EdgeInsets.only(top: screenHeight * 0.6),
+                      padding: EdgeInsets.only(top: screenHeight * 0.1),
                       child: Opacity(
-                        opacity: _welcomeAnimation.value,
+                        opacity: _textAnimation.value,
                         child: Text(
-                          "Welcome",
+                          subtitle,
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 16,
                             color: Colors.white70,
-                            fontStyle: FontStyle.italic,
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
+
+                  // Welcome text
+                  Transform.translate(
+                    offset: Offset(
+                      0,
+                      screenHeight * 0.2 * (1 - _welcomeAnimation.value),
+                    ),
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: screenHeight * 0.2),
+                        child: Opacity(
+                          opacity: _welcomeAnimation.value,
+                          child: Text(
+                            "Welcome",
+                            style: TextStyle(
+                              fontSize: 28,
+                              color: Colors.white70,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class SunWidget extends StatelessWidget {
+  final double animationValue;
+
+  const SunWidget({required this.animationValue});
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.scale(
+      scale: 1.0 - (animationValue * 0.3),
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [
+              Color.lerp(Colors.orange, Colors.red, animationValue)!,
+              Color.lerp(Colors.yellow, Colors.deepOrange, animationValue)!,
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color.lerp(Colors.orange.withOpacity(0.5),
+                  Colors.deepOrange.withOpacity(0.5), animationValue)!,
+              spreadRadius: 20,
+              blurRadius: 50,
+            ),
+          ],
+        ),
       ),
     );
   }
