@@ -26,13 +26,16 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
-    )..repeat(reverse: true);
+      duration: const Duration(seconds: 3), // Increased duration for smoother transition
+    );
 
     _animation = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeInOut,
+      curve: Curves.easeInOut, // Smoother curve for natural movement
     );
+
+    // Start animation and keep at final state
+    _controller.forward();
   }
 
   @override
@@ -76,7 +79,7 @@ class _SunsetSplashScreenState extends State<SunsetSplashScreen>
               child: Stack(
                 children: [
                   Positioned(
-                    top: MediaQuery.of(context).size.height * 0.2 * _animation.value,
+                    top: MediaQuery.of(context).size.height * 0.3 * _animation.value,
                     left: MediaQuery.of(context).size.width * 0.4,
                     child: SunWidget(animationValue: _animation.value),
                   ),
