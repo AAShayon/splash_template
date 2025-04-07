@@ -1,18 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:splash_template/src/custom_splash_screen.dart';
+import 'package:splash_template/src/splash_config.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: CombinedSplashScreen(),
+      home: CustomSplashScreen(
+        config: SplashConfig(
+          appNamePart1: "My",
+          appNamePart2: "App",
+          subtitle: "The best app ever",
+          welcomeText: "Hello!",
+          sunsetDuration: Duration(seconds: 4),
+          textAnimationDuration: Duration(seconds: 3),
+          sunStartColor: Colors.yellow,
+          sunEndColor: Colors.deepOrange,
+          skyStartTopColor: Colors.blue,
+          skyStartMiddleColor: Colors.blueAccent,
+          skyStartBottomColor: Colors.indigo,
+          skyEndTopColor: Colors.purple,
+          skyEndMiddleColor: Colors.deepPurple,
+          skyEndBottomColor: Colors.black,
+          appNameTextStyle: TextStyle(
+            fontSize: 40,
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+          ),
+          sunSize: 120,
+        ),
+      ),
     );
   }
 }
 
 class CombinedSplashScreen extends StatefulWidget {
+  const CombinedSplashScreen({super.key});
+
   @override
   _CombinedSplashScreenState createState() => _CombinedSplashScreenState();
 }
@@ -52,14 +81,14 @@ class _CombinedSplashScreenState extends State<CombinedSplashScreen>
     _textAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _textController,
-        curve: Interval(0.0, 0.75, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.75, curve: Curves.easeOut),
       ),
     );
 
     _welcomeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _textController,
-        curve: Interval(0.5, 1.0, curve: Curves.easeOut),
+        curve: const Interval(0.5, 1.0, curve: Curves.easeOut),
       ),
     );
 
@@ -256,3 +285,6 @@ class SunWidget extends StatelessWidget {
     );
   }
 }
+
+
+
